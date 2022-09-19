@@ -1,40 +1,27 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-import chromedriver_autoinstaller
-from pyvirtualdisplay import Display
-display = Display(visible=0, size=(800, 800))  
-display.start()
+from fake_useragent import UserAgent
 
-chromedriver_autoinstaller.install()  # Check if the current version of chromedriver exists
-                                      # and if it doesn't exist, download it automatically,
-                                      # then add chromedriver to path
+chrome_options = Options()
+chrome_options.add_argument("--disable-extensions")
+ua = UserAgent(verify_ssl=False)
+user_agent = ua.random
+print(user_agent)
+chrome_options.add_argument(f'user-agent={user_agent}')
+driver = webdriver.Chrome(chrome_options=chrome_options)
 
-chrome_options = webdriver.ChromeOptions()    
-# Add your options as needed    
-options = [
-  # Define window size here
-   "--window-size=1200,1200",
-    "--ignore-certificate-errors"
- 
-    #"--headless",
-    #"--disable-gpu",
-    #"--window-size=1920,1200",
-    #"--ignore-certificate-errors",
-    #"--disable-extensions",
-    #"--no-sandbox",
-    #"--disable-dev-shm-usage",
-    #'--remote-debugging-port=9222'
-]
+count = 0
+while count == 0:
+    driver.get('https://allegro.pl/listing?string=macbook')
+    page_source = driver.page_source
+    links = driver.find_elements_by_class_name('mpof_ki')
+    for l in links:
+        el = l.find_element_by_tag_name('a')
+        print(el)
+    print(len(links))
+    driver.close()
+    if links:
+        count += 1
 
-for option in options:
-    chrome_options.add_argument(option)
 
-    
-driver = webdriver.Chrome(options = chrome_options)
-
-driver.get('http://github.com')
-print(driver.title)
-with open('./GitHub_Action_Results.txt', 'w') as f:
-    f.write(f"This was written with a GitHub action {driver.title}")
-
+driver.quit()
